@@ -5,6 +5,7 @@ import java.util.Collections;
 
 public class MaximizaLucro {
     private ArrayList<Objeto> lista_objetos = new ArrayList<Objeto>();
+    private ArrayList<Objeto> lista_ordenada = new ArrayList<Objeto>(lista_objetos);
     private int []solucao;
     
     public void OtimizaTransporte(Veiculo caminhao){
@@ -26,24 +27,32 @@ public class MaximizaLucro {
         
         imprimeListaObjetos();
 
-        Collections.sort(this.lista_objetos);
+        this.lista_ordenada = (ArrayList<Objeto>)lista_objetos.clone();
+        Collections.sort(this.lista_ordenada);
         
         System.out.println("\n");
+        
+        for(int i = 0; i < this.lista_ordenada.size(); i++){
+            if((caminhao.getCapacidadeAtual() + this.lista_ordenada.get(i).getPeso()) <= caminhao.getCapacidade()){
+                caminhao.adicionaObjeto(this.lista_ordenada.get(i));
+            }
+        }
 
-        imprimeListaObjetosCarregados();
+        imprimeListaObjetosCarregados(caminhao);
 
-        int aux = caminhao.getCapacidade();
-        for(Objeto obj: this.lista_objetos){
-            aux -= obj.getPeso();
-            if(aux > 0){
-                //verificar se cabe no caminhão, se cabe ele vai acrecentar 1 na lista de solução
-                this.solucao[obj.getId() - 1] = 1;
+        for(Objeto obj: caminhao.getLista_obj()){
+            for(int i=0;i<this.lista_objetos.size();i++){
+                //comparar o objeto que está dentro do caminhao até encontrar, 
+                //encontrei ele vai adionar um 1 a minha lista solucao
+                if(obj.getId() == this.lista_objetos.get(i).getId()){
+                    this.solucao[i] = 1;
+                }
             }
         }
         
         System.out.println("\n");
         
-        f_solucao();
+        f_solucao(caminhao);
         
         System.out.println("\n");
         
@@ -65,21 +74,19 @@ public class MaximizaLucro {
         this.solucao = solucao;
     }
     
-    public void f_solucao(){
+    public void f_solucao(Veiculo veiculo){
         System.out.println("Vetor solução: ");
         for(int cont = 0; cont < this.solucao.length; cont++){
             System.out.print(this.solucao[cont] + " | ");
         }
     }
     
-    public void imprimeListaObjetosCarregados(){
-        System.out.println("\nLista de Objetos Carregados: ");
+    public void imprimeListaObjetosCarregados(Veiculo veiculo){
+        System.out.println("Lista de Objetos Carregados: ");
         System.out.println("obj - lucro - peso - div lucro/peso");
         
-        for(Objeto obj: this.lista_objetos){
-            if(obj.divisaoDoLucroPeso() > 0.43){
-                System.out.println(obj.getId() + " - " + obj.getLucro() + " - " + obj.getPeso() + " - " + obj.divisaoDoLucroPeso()+ " - ");
-            }
+        for(Objeto obj: veiculo.getLista_obj()){
+            System.out.println(obj.getId() + " - " + obj.getLucro() + " - " + obj.getPeso() + " - " + obj.divisaoDoLucroPeso()+ " - ");
         }
     }
     
@@ -90,7 +97,6 @@ public class MaximizaLucro {
         for(Objeto obj: this.lista_objetos){
             System.out.println(obj.getId() + " - " + obj.getLucro() + " - " + obj.getPeso() + " - " + obj.divisaoDoLucroPeso()+ " - "); 
         }
-        
     }
     
     public void calculaLucroTotal(){
@@ -105,6 +111,6 @@ public class MaximizaLucro {
                 }
             }
         }
-        System.out.println("\nLucro Total = " + aux); 
+        System.out.println("\nLucro Total = " + "R$" + aux); 
     }
 }
